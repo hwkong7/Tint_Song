@@ -1,9 +1,8 @@
 import SwiftUI
 
 struct TintView: View {
-    @State private var viewModel = TintViewModel()   // ✅ @State 로 변경
+    @State private var viewModel = TintViewModel()  
     @State private var showingAddSheet = false
-    let viewModel: TintViewModel
 
     var body: some View {
         NavigationStack(path: $viewModel.path) {

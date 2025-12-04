@@ -8,5 +8,6 @@ let tintColors: [String: Color] = [
     "브라운": .brown,
     "오렌지": .orange,
     "로즈": Color(red: 0.8, green: 0.4, blue: 0.5),
-    "누드": Color(red: 0.93, green: 0.82, blue: 0.72)
+    "누드": Color(red: 0.99, green: 0.78, blue: 0.78),
+    "모브": Color(red: 0.86, green: 0.58, blue: 0.78)
 ]

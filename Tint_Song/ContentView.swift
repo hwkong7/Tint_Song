@@ -24,7 +24,6 @@ struct ContentView: View {
                     Text("Songs")
                 }
         }
-        .tint(.pink)   // 선택한 탭 색 (원하는 색으로 변경 가능)
     }
 }
 

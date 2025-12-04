@@ -9,15 +9,25 @@ import SwiftUI
 
 struct ContentView: View {
     var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
+        TabView {
+            // 1️⃣ Song 자리에 Tint 넣기
+            TintView()
+                .tabItem {
+                    Image(systemName: "paintpalette")
+                    Text("Tint")
+                }
+
+            // 2️⃣ Singer 자리에 Song 넣기
+            SongView()
+                .tabItem {
+                    Image(systemName: "music.note.list")
+                    Text("Songs")
+                }
         }
-        .padding()
+        .tint(.pink)   // 선택한 탭 색 (원하는 색으로 변경 가능)
     }
 }
+
 
 #Preview {
     ContentView()

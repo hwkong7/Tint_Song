@@ -9,31 +9,35 @@ struct TintAddView: View {
     @State var colorFamily = ""
     @State var rating = 5
     @State var description = ""
-
-    // 🔥 사용자 정의 색상 저장
+    
+    // 🔥 사용자 추가 색상
     @State private var customColors: [String: Color] = [:]
-
-    // ColorPicker 관련 상태
+    
+    // ColorPicker 상태값
     @State private var showColorPicker = false
     @State private var newColorName = ""
     @State private var selectedCustomColor: Color = .pink
     
+    // 🔥 HEX 저장용
+    @State private var selectedColorHex: String? = nil
+    
     var body: some View {
         NavigationView {
             Form {
+                
                 // MARK: 제품 정보
                 Section("제품 정보 *") {
                     TextField("제품명", text: $productName)
                     TextField("브랜드", text: $brand)
                 }
                 
-                // MARK: 색상 선택
-                Section(header: Text("컬러 선택")) {
+                // MARK: 컬러 선택
+                Section("컬러 선택") {
                     
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack(spacing: 14) {
                             
-                            // 기본 색상 + 새로 추가된 색상 모두 표시
+                            // 기본 + 커스텀 색상 모두
                             ForEach(allColors.keys.sorted(), id: \.self) { key in
                                 let color = allColors[key]!
                                 
@@ -43,7 +47,6 @@ struct TintAddView: View {
                                         .frame(width: 36, height: 36)
                                         .shadow(radius: 2)
                                     
-                                    // 선택된 색상은 테두리 표시
                                     if colorFamily == key {
                                         Circle()
                                             .stroke(Color.black.opacity(0.9), lineWidth: 2)
@@ -52,10 +55,20 @@ struct TintAddView: View {
                                 }
                                 .onTapGesture {
                                     colorFamily = key
+                                    
+                                    // 기본색이면 tintColors에서 HEX 가져오기
+                                    if let hex = tintColorHexMap[key] {
+                                        selectedColorHex = hex
+                                    }
+                                    
+                                    // 사용자 정의색이면 customColors에서 HEX 생성
+                                    if let custom = customColors[key] {
+                                        selectedColorHex = custom.toHex()
+                                    }
                                 }
                             }
                             
-                            // ➕ 사용자 정의 색상 추가 버튼
+                            // ➕ 새 색상 추가 버튼
                             Button {
                                 showColorPicker = true
                             } label: {
@@ -72,7 +85,7 @@ struct TintAddView: View {
                         .padding(.vertical, 8)
                     }
                     
-                    // 🔥 ColorPicker UI
+                    // MARK: ColorPicker UI
                     if showColorPicker {
                         VStack(alignment: .leading, spacing: 12) {
                             
@@ -82,19 +95,19 @@ struct TintAddView: View {
                             TextField("색상 이름 입력 (예: 로지핑크)", text: $newColorName)
                                 .textFieldStyle(.roundedBorder)
                             
-                            // 새 색상 추가 버튼
                             Button("색상 추가") {
-                                if !newColorName.isEmpty {
-                                    // 사용자 정의 색상 저장
-                                    customColors[newColorName] = selectedCustomColor
-                                    
-                                    // 선택된 색상 업데이트
-                                    colorFamily = newColorName
-                                    
-                                    // 초기화
-                                    newColorName = ""
-                                    showColorPicker = false
-                                }
+                                guard !newColorName.isEmpty else { return }
+                                
+                                // 딕셔너리에 저장
+                                customColors[newColorName] = selectedCustomColor
+                                
+                                // 선택값 설정
+                                colorFamily = newColorName
+                                selectedColorHex = selectedCustomColor.toHex()
+                                
+                                // 초기화
+                                newColorName = ""
+                                showColorPicker = false
                             }
                             .buttonStyle(.borderedProminent)
                         }
@@ -103,7 +116,7 @@ struct TintAddView: View {
                 }
                 
                 // MARK: 평점
-                Section("평점 *") {
+                Section("평점") {
                     Picker("평점", selection: $rating) {
                         ForEach(1...10, id: \.self) { score in
                             Text("\(score)점")
@@ -118,6 +131,8 @@ struct TintAddView: View {
                 }
             }
             .toolbar {
+                
+                // MARK: 추가 버튼
                 ToolbarItem(placement: .confirmationAction) {
                     Button("추가") {
                         Task {
@@ -125,7 +140,8 @@ struct TintAddView: View {
                                 id: UUID(),
                                 productName: productName,
                                 brand: brand,
-                                colorFamily: colorFamily,  // 새 색상이면 사용자가 입력한 이름 저장
+                                colorFamily: colorFamily,
+                                colorHex: selectedColorHex,
                                 rating: rating,
                                 description: description
                             )
@@ -134,9 +150,10 @@ struct TintAddView: View {
                             dismiss()
                         }
                     }
-                    .disabled(productName.isEmpty || brand.isEmpty)
+                    .disabled(productName.isEmpty || brand.isEmpty || colorFamily.isEmpty)
                 }
                 
+                // MARK: 취소 버튼
                 ToolbarItem(placement: .cancellationAction) {
                     Button("취소") { dismiss() }
                 }
@@ -144,8 +161,13 @@ struct TintAddView: View {
         }
     }
     
-    // MARK: 합쳐진 색상 목록 (기본 + 사용자 추가)
+    // MARK: 기본 + 사용자 색 합치기
     private var allColors: [String: Color] {
         tintColors.merging(customColors) { $1 }
+    }
+    
+    // MARK: 기본색 HEX 매핑
+    private var tintColorHexMap: [String: String] {
+        tintColors.mapValues { $0.toHex() ?? "#CCCCCC" }
     }
 }
